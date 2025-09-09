@@ -1,7 +1,7 @@
 (function() {
     'use strict';
     
-    console.log('🔧 HKMU Calendar Interceptor: Script loaded at', new Date().toISOString());
+
     
     // Target URL patterns to intercept
     const targetUrl = 'https://schedule.hkmu.edu.hk/ScheduleTool-war/main/calendar/sas_events.jsp';
@@ -12,7 +12,7 @@
     
     // Backup hooking function
     function hookAPIs() {
-        console.log('🔄 Hooking/Re-hooking XHR and Fetch APIs...');
+
 
         // Hook XMLHttpRequest
         const originalXHROpen = XMLHttpRequest.prototype.open;
@@ -22,13 +22,13 @@
             this._interceptUrl = url;
             this._interceptMethod = method;
             
-            console.log('📡 XHR Request:', method, url);
+
             
             return originalXHROpen.apply(this, arguments);
         };
         
         XMLHttpRequest.prototype.send = function(body) {
-            console.log('🚀 XHR Send:', this._interceptMethod, this._interceptUrl);
+
             
             if (isTargetUrl(this._interceptUrl)) {
                 console.log('🎯 HKMU Interceptor: Detected XHR request to', this._interceptUrl);
@@ -57,16 +57,14 @@
             const url = typeof input === 'string' ? input : input.url;
             const method = init.method || 'GET';
             
-            console.log('🌐 Fetch Request:', method, url);
+
             
             if (isTargetUrl(url)) {
-                console.log('🎯 HKMU Interceptor: Detected fetch request to', url);
+
                 
                 return originalFetch.apply(this, arguments)
                     .then(response => {
-                        console.log('✅ HKMU Interceptor: Fetch Response received!');
-                        console.log('📊 Response Status:', response.status);
-                        console.log('📊 Response Headers:', response.headers);
+
                         
                         // Clone response to read body without consuming it
                         const responseClone = response.clone();
@@ -77,13 +75,13 @@
                                 console.log('HKMU Calendar Data Intercepted:', textData);
                             })
                             .catch(error => {
-                                console.log('❌ Error reading response:', error);
+
                             });
                         
                         return response;
                     })
                     .catch(error => {
-                        console.log('❌ HKMU Interceptor: Fetch error:', error);
+
                         throw error;
                     });
             }
@@ -95,17 +93,17 @@
     
     // Initial hook
     hookAPIs();
-    console.log('HKMU Calendar Interceptor: Ready');
+
     
     // Function to create duplicate button
     function createDuplicateButton() {
-        console.log('🔍 Searching for original button...');
+
         
         const checkForButton = setInterval(() => {
             const originalButton = document.querySelector('#btnStudentAlertSetting');
             
             if (originalButton && !document.getElementById('btnCustomAction')) {
-                console.log('🔘 Creating duplicate button...');
+
                 
                 // Create the duplicate button as an anchor tag
                 const duplicateButton = document.createElement('a');
@@ -125,7 +123,7 @@
                 // Add empty click handler (to be filled later)
                 duplicateButton.onclick = function(e) {
                     e.preventDefault();
-                    console.log('🔘 Custom Action button clicked - function to be implemented');
+                    // Custom Action button clicked - function to be implemented
                     // Empty function - user will fill this later
                 };
                 
@@ -135,7 +133,7 @@
                 // Insert the button next to the original
                 originalButton.parentNode.insertBefore(duplicateButton, originalButton.nextSibling);
                 
-                console.log('✅ Duplicate button created successfully');
+
                 clearInterval(checkForButton);
             }
         }, 500); // Check every 500ms
