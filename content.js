@@ -54,4 +54,41 @@ window.addEventListener('load', () => {
     injectScript();
 });
 
+// Listen for messages from injected script
+window.addEventListener('message', function(event) {
+    // Only accept messages from same origin
+    if (event.origin !== window.location.origin) {
+        return;
+    }
+    
+    // Check if this is our intercepted data message
+    if (event.data && event.data.type === 'HKMU_INTERCEPTED_DATA' && event.data.source === 'hkmu-interceptor') {
+        console.log('📨 Content script received intercepted data:', event.data.data);
+        
+        const requestData = event.data.data;
+        
+        // Store data in Chrome storage
+        chrome.storage.local.get(['interceptedRequests'], (result) => {
+            const existingData = result.interceptedRequests || [];
+            existingData.push(requestData);
+            
+            chrome.storage.local.set({
+                interceptedRequests: existingData
+            }, () => {
+                console.log('💾 Data saved to Chrome storage via content script');
+                
+                // Send message to popup if it's open
+                chrome.runtime.sendMessage({
+                    type: 'DATA_INTERCEPTED',
+                    data: requestData
+                }).catch(() => {
+                    // Popup might not be open, ignore error
+                    console.log('📭 Popup not available for message');
+                });
+            });
+        });
+    }
+});
+
 console.log('🚀 HKMU Calendar Interceptor: Ready to monitor requests!');
+console.log('👂 Content script listening for postMessage events...');
