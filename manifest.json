@@ -1,11 +1,25 @@
 {
   "manifest_version": 3,
-  "name": "Hello Extensions",
-  "description": "Base Level Extension",
+  "name": "XHR Request Interceptor",
+  "description": "Chrome extension to intercept and record XHR requests",
   "version": "1.0",
   "action": {
     "default_popup": "hello.html",
-    "default_title": "Hello Extensions"
+    "default_title": "XHR Interceptor"
   },
-  "permissions": ["storage", "activeTab", "scripting"]
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected-script.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
