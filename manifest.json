@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "HKMU Calendar Sync",
+  "name": "HKMU Syncalendar",
   "description": "Chrome extension to intercept and record XHR requests",
   "version": "1.0",
   "action": {
     "default_popup": "hello.html",
-    "default_title": "HKMU Calendar Sync"
+    "default_title": "HKMU Syncalendar"
   },
   "permissions": ["storage", "activeTab", "scripting", "downloads"],
   "host_permissions": ["<all_urls>"],

@@ -1,6 +1,6 @@
-// Popup script for XHR Request Interceptor
+// Popup script for HKMU Syncalendar
 
-console.log('HKMU Calendar Sync: Popup script loaded');
+console.log('HKMU Syncalendar: Popup script loaded');
 
 // DOM elements
 const statusDot = document.getElementById('statusDot');
@@ -28,9 +28,9 @@ async function initialize() {
     // Update UI
     updateUI();
     
-    console.log('HKMU Calendar Sync: Popup initialized');
+    console.log('HKMU Syncalendar: Popup initialized');
   } catch (error) {
-    console.error('HKMU Calendar Sync: Failed to initialize popup', error);
+    console.error('HKMU Syncalendar: Failed to initialize popup', error);
   }
 }
 
@@ -135,15 +135,7 @@ function setupEventListeners() {
     await exportData();
   });
   
-  // Set up debug button
-  const debugBtn = document.getElementById('debugBtn');
-  if (debugBtn) {
-    debugBtn.addEventListener('click', () => {
-      console.log('Debug button clicked - calling debugInterceptedData...');
-      debugInterceptedData();
-      alert('Debug information logged to console. Open Developer Tools (F12) to view.');
-    });
-  }
+
   
   // Auto-refresh data every 2 seconds
   setInterval(async () => {
@@ -157,7 +149,7 @@ function setupEventListeners() {
 async function clearAllData() {
   return new Promise((resolve) => {
     chrome.storage.local.remove(['interceptedRequests'], () => {
-      console.log('HKMU Calendar Sync: All data cleared');
+      console.log('HKMU Syncalendar: All data cleared');
       resolve();
     });
   });
@@ -598,4 +590,4 @@ if (document.readyState === 'loading') {
   initialize();
 }
 
-console.log('HKMU Calendar Sync: Popup script initialized');
+console.log('HKMU Syncalendar: Popup script initialized');
