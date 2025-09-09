@@ -38,6 +38,36 @@
                 this.onreadystatechange = function() {
                     if (this.readyState === 4) {
                         console.log('HKMU Calendar Data Intercepted:', this.responseText);
+                        
+                        // Store intercepted data in Chrome storage
+                        const requestData = {
+                            url: this._interceptUrl,
+                            method: this._interceptMethod,
+                            timestamp: new Date().toISOString(),
+                            responseData: this.responseText,
+                            status: this.status,
+                            statusText: this.statusText
+                        };
+                        
+                        // Save to Chrome storage
+                        chrome.storage.local.get(['interceptedRequests'], (result) => {
+                            const existingData = result.interceptedRequests || [];
+                            existingData.push(requestData);
+                            
+                            chrome.storage.local.set({
+                                interceptedRequests: existingData
+                            }, () => {
+                                console.log('Data saved to Chrome storage');
+                                
+                                // Send message to popup if it's open
+                                chrome.runtime.sendMessage({
+                                    type: 'DATA_INTERCEPTED',
+                                    data: requestData
+                                }).catch(() => {
+                                    // Popup might not be open, ignore error
+                                });
+                            });
+                        });
                     }
                     
                     if (originalOnReadyStateChange) {
@@ -73,6 +103,36 @@
                         responseClone.text()
                             .then(textData => {
                                 console.log('HKMU Calendar Data Intercepted:', textData);
+                                
+                                // Store intercepted data in Chrome storage
+                                const requestData = {
+                                    url: url,
+                                    method: method,
+                                    timestamp: new Date().toISOString(),
+                                    responseData: textData,
+                                    status: response.status,
+                                    statusText: response.statusText
+                                };
+                                
+                                // Save to Chrome storage
+                                chrome.storage.local.get(['interceptedRequests'], (result) => {
+                                    const existingData = result.interceptedRequests || [];
+                                    existingData.push(requestData);
+                                    
+                                    chrome.storage.local.set({
+                                        interceptedRequests: existingData
+                                    }, () => {
+                                        console.log('Data saved to Chrome storage');
+                                        
+                                        // Send message to popup if it's open
+                                        chrome.runtime.sendMessage({
+                                            type: 'DATA_INTERCEPTED',
+                                            data: requestData
+                                        }).catch(() => {
+                                            // Popup might not be open, ignore error
+                                        });
+                                    });
+                                });
                             })
                             .catch(error => {
 

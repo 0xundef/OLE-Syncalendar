@@ -7,7 +7,7 @@
     "default_popup": "hello.html",
     "default_title": "XHR Interceptor"
   },
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "downloads"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {

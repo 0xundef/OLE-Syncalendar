@@ -200,6 +200,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'DATA_UPDATED') {
     loadRequestData();
     sendResponse({ success: true });
+  } else if (request.type === 'DATA_INTERCEPTED') {
+    // New data intercepted, refresh the display
+    loadRequestData();
+    sendResponse({ success: true });
   }
 });
 
