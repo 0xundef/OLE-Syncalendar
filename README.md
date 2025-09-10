@@ -1,37 +1,31 @@
-# Hello Extensions - Chrome Extension
+# HKMU Syncalendar - Chrome Extension
 
-This is a basic Chrome extension based on the official Google Chrome Extensions tutorial.
+A Chrome extension that intercepts and imports calendar events from the HKMU OLE calendar to Google Calendar format.
 
 ## Features
 
-- Simple popup interface
-- Button to change webpage background color
-- Uses Chrome storage API
-- Demonstrates content script injection
+- [ ] Locally imports calendar events from HKMU calendar to Google Calendar
+- [x] Automatically syncs calendar events with the Google Calendar API
 
-## Installation
+## Locally Import
 
-1. Open Chrome and navigate to `chrome://extensions/`
-2. Enable "Developer mode" by clicking the toggle in the top right corner
-3. Click "Load unpacked" button
-4. Select this project folder (`HKMUCourseSync`)
-5. The extension should now appear in your extensions list
+Go to the OLE platform and navigate to the calendar webpage. The extension will automatically intercept the calendar events.
 
-## Usage
+### Pop up the Extension Panel
+![import calendar events](doc_popup.png)
 
-1. Click the extension icon in the Chrome toolbar
-2. A popup will appear with "Hello Extensions" title and a button
-3. Click the button to change the background color of the current webpage
+Once you export the events data, the extension will automatically convert the OLE-specific calendar events to standard Google Calendar format. 
+![import calendar events](doc_export.png)
 
-## Files Structure
+### Import Events to Google Calendar
 
-- `manifest.json` - Extension configuration and metadata
-- `hello.html` - Popup interface HTML
-- `button.css` - Styling for the popup
-- `popup.js` - JavaScript functionality for the popup
+We recommend creating a separate Google Calendar.
 
-## Permissions
+![import calendar events](doc_create_calendar.png)
 
-- `storage` - To save user preferences
-- `activeTab` - To access the current active tab
-- `scripting` - To inject scripts into web pages
+Then import the events to the calendar.
+![import calendar events](doc_import.png)
+
+## One-click Sync
+
+todo
