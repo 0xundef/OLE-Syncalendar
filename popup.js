@@ -164,8 +164,11 @@ async function exportData() {
       return;
     }
     
-    // Parse calendar events from intercepted data
-    const events = parseCalendarEvents(requests);
+    // Get only the latest request for export
+    const latestRequest = [requests[requests.length - 1]];
+    
+    // Parse calendar events from the latest intercepted data
+    const events = parseCalendarEvents(latestRequest);
     
     if (events.length === 0) {
       alert('No calendar events found in intercepted data');

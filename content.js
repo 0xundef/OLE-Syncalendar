@@ -64,13 +64,16 @@ window.addEventListener('message', function(event) {
         
         const requestData = event.data.data;
         
-        // Store data in Chrome storage
+        // Store data in Chrome storage (keep only latest 2 requests)
         chrome.storage.local.get(['interceptedRequests'], (result) => {
             const existingData = result.interceptedRequests || [];
             existingData.push(requestData);
             
+            // Keep only the latest 2 requests
+            const latestRequests = existingData.slice(-2);
+            
             chrome.storage.local.set({
-                interceptedRequests: existingData
+                interceptedRequests: latestRequests
             }, () => {
                 // Send message to popup if it's open
                 chrome.runtime.sendMessage({
