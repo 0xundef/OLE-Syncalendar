@@ -529,6 +529,72 @@ function escapeCSVValue(value) {
   return stringValue;
 }
 
+// Show visual indicator when data changes are detected
+function showDataChangeIndicator(changeDetails) {
+  // Create a temporary notification element
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: #4CAF50;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease-out;
+    max-width: 300px;
+    line-height: 1.4;
+  `;
+  
+  // Format notification content based on change details
+  let content = '📅 Calendar Updated!';
+  if (changeDetails && changeDetails.added && changeDetails.removed) {
+    const { added, removed } = changeDetails;
+    if (added.length > 0 && removed.length > 0) {
+      content += `<br><small>+${added.length} added, -${removed.length} removed</small>`;
+    } else if (added.length > 0) {
+      content += `<br><small>+${added.length} new event(s)</small>`;
+      if (added[0] && added[0].eventTitle) {
+        content += `<br><small>📚 ${added[0].eventTitle}</small>`;
+      }
+    } else if (removed.length > 0) {
+      content += `<br><small>-${removed.length} event(s) removed</small>`;
+      if (removed[0] && removed[0].eventTitle) {
+        content += `<br><small>📚 ${removed[0].eventTitle}</small>`;
+      }
+    }
+  }
+  
+  notification.innerHTML = content;
+  
+  // Add CSS animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  `;
+  document.head.appendChild(style);
+  
+  document.body.appendChild(notification);
+  
+  // Remove after 4 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.style.animation = 'slideIn 0.3s ease-out reverse';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }
+  }, 4000);
+}
+
 // Handle messages from content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'DATA_UPDATED') {
@@ -537,9 +603,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.type === 'DATA_INTERCEPTED') {
     // New data intercepted, refresh the display
     loadRequestData();
+    
     sendResponse({ success: true });
-  }
-});
+   }
+ });
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

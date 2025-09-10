@@ -67,6 +67,18 @@ window.addEventListener('message', function(event) {
         // Store data in Chrome storage (keep only latest 2 requests)
         chrome.storage.local.get(['interceptedRequests'], (result) => {
             const existingData = result.interceptedRequests || [];
+            
+            // Check if there's a previous request to compare with
+            let hasChanges = false;
+            let changeDetails = null;
+            if (existingData.length > 0) {
+                const previousData = existingData[existingData.length - 1];
+                // Parse and compare calendar events as sets
+                const comparison = compareCalendarEvents(previousData.responseData, requestData.responseData);
+                hasChanges = comparison.hasChanges;
+                changeDetails = comparison.details;
+            }
+            
             existingData.push(requestData);
             
             // Keep only the latest 2 requests
@@ -75,10 +87,33 @@ window.addEventListener('message', function(event) {
             chrome.storage.local.set({
                 interceptedRequests: latestRequests
             }, () => {
+                // Show notification if data has changed
+                if (hasChanges && changeDetails) {
+                    const { added, removed } = changeDetails;
+                    let message = 'Calendar data updated: ';
+                    
+                    if (added.length > 0 && removed.length > 0) {
+                        message += `${added.length} added, ${removed.length} removed`;
+                    } else if (added.length > 0) {
+                        message += `${added.length} new event(s) added`;
+                    } else if (removed.length > 0) {
+                        message += `${removed.length} event(s) removed`;
+                    }
+                    
+                    chrome.notifications.create({
+                        type: 'basic',
+                        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzQyODVGNCIvPgo8cGF0aCBkPSJNMjQgMTJDMTcuMzczIDEyIDEyIDE3LjM3MyAxMiAyNEMxMiAzMC42MjcgMTcuMzczIDM2IDI0IDM2QzMwLjYyNyAzNiAzNiAzMC42MjcgMzYgMjRDMzYgMTcuMzczIDMwLjYyNyAxMiAyNCAxMloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yMiAyMEgyNlYyNEgyMlYyMFoiIGZpbGw9IiM0Mjg1RjQiLz4KPHA+YXRoIGQ9Ik0yMiAyNkgyNlYzMEgyMlYyNloiIGZpbGw9IiM0Mjg1RjQiLz4KPC9zdmc+',
+                        title: 'HKMU Calendar Updated',
+                        message: message
+                    });
+                }
+                
                 // Send message to popup if it's open
                 chrome.runtime.sendMessage({
                     type: 'DATA_INTERCEPTED',
-                    data: requestData
+                    data: requestData,
+                    hasChanges: hasChanges,
+                    changeDetails: changeDetails
                 }).catch(() => {
                     // Popup might not be open, ignore error
                 });
@@ -86,6 +121,42 @@ window.addEventListener('message', function(event) {
         });
     }
 });
+
+// Function to compare calendar events
+function compareCalendarEvents(previousData, currentData) {
+    try {
+        // Parse JSON responses
+        const prevEvents = JSON.parse(previousData);
+        const currEvents = JSON.parse(currentData);
+        
+        // Convert to sets for comparison
+        const prevSet = new Set(prevEvents.map(event => JSON.stringify(event)));
+        const currSet = new Set(currEvents.map(event => JSON.stringify(event)));
+        
+        // Find differences
+        const added = [...currSet].filter(event => !prevSet.has(event)).map(e => JSON.parse(e));
+        const removed = [...prevSet].filter(event => !currSet.has(event)).map(e => JSON.parse(e));
+        
+        const hasChanges = added.length > 0 || removed.length > 0;
+        
+        return {
+            hasChanges,
+            details: {
+                added,
+                removed,
+                totalPrevious: prevEvents.length,
+                totalCurrent: currEvents.length
+            }
+        };
+    } catch (error) {
+        console.warn('⚠️ Error comparing calendar events:', error);
+        // Fallback to string comparison
+        return {
+            hasChanges: previousData !== currentData,
+            details: { error: 'Failed to parse JSON, used string comparison' }
+        };
+    }
+}
 
 console.log('🚀 HKMU Calendar Interceptor: Ready to monitor requests!');
 console.log('👂 Content script listening for postMessage events...');
