@@ -1,6 +1,4 @@
-// Popup script for HKMU Syncalendar
-
-console.log('HKMU Syncalendar: Popup script loaded');
+// Popup script for HKMU Calendar Interceptor
 
 // DOM elements
 const statusDot = document.getElementById('statusDot');
@@ -28,7 +26,7 @@ async function initialize() {
     // Update UI
     updateUI();
     
-    console.log('HKMU Syncalendar: Popup initialized');
+
   } catch (error) {
     console.error('HKMU Syncalendar: Failed to initialize popup', error);
   }
@@ -36,12 +34,9 @@ async function initialize() {
 
 // Load request data from storage
 async function loadRequestData() {
-  console.log('=== loadRequestData called ===');
   return new Promise((resolve) => {
     chrome.storage.local.get(['interceptedRequests'], (result) => {
-      console.log('Storage get result:', result);
       const requests = result.interceptedRequests || [];
-      console.log('Loaded requests count:', requests.length);
       displayRequestData(requests);
       updateStats(requests);
       resolve();
@@ -149,7 +144,7 @@ function setupEventListeners() {
 async function clearAllData() {
   return new Promise((resolve) => {
     chrome.storage.local.remove(['interceptedRequests'], () => {
-      console.log('HKMU Syncalendar: All data cleared');
+
       resolve();
     });
   });
@@ -157,29 +152,22 @@ async function clearAllData() {
 
 // Export data to CSV file for Google Calendar import
 async function exportData() {
-  console.log('=== exportData called ===');
   try {
     const result = await new Promise((resolve) => {
       chrome.storage.local.get(['interceptedRequests'], resolve);
     });
-    console.log('Export - Storage result:', result);
     
     const requests = result.interceptedRequests || [];
-    console.log('Export - Requests count:', requests.length);
     
     if (requests.length === 0) {
-      console.log('Export - No requests found, showing alert');
       alert('No data to export');
       return;
     }
     
     // Parse calendar events from intercepted data
-    console.log('Export - Calling parseCalendarEvents...');
     const events = parseCalendarEvents(requests);
-    console.log('Export - Parsed events:', events);
     
     if (events.length === 0) {
-      console.log('Export - No events found, showing alert');
       alert('No calendar events found in intercepted data');
       return;
     }
@@ -204,7 +192,6 @@ async function exportData() {
     
     URL.revokeObjectURL(url);
     
-    console.log('HKMU Calendar: Events exported to CSV', filename, `${events.length} events`);
     alert(`Successfully exported ${events.length} calendar events to CSV format for Google Calendar import.`);
   } catch (error) {
     console.error('HKMU Calendar: Export failed', error);
@@ -214,12 +201,9 @@ async function exportData() {
 
 // Parse calendar events from intercepted HKMU data
 function parseCalendarEvents(requests) {
-    console.log('🔍 Parsing calendar events from requests:', requests);
-    
     let allEvents = [];
     
     requests.forEach((request, index) => {
-        console.log(`📋 Processing request ${index + 1}:`, request);
         
         if (request.responseData) {
             try {
@@ -229,9 +213,7 @@ function parseCalendarEvents(requests) {
                 if (typeof request.responseData === 'string') {
                     try {
                         data = JSON.parse(request.responseData);
-                        console.log('✅ Successfully parsed JSON data:', data);
                     } catch (jsonError) {
-                        console.log('⚠️ Not valid JSON, treating as text:', jsonError.message);
                         data = request.responseData;
                     }
                 } else {
@@ -272,16 +254,12 @@ function parseCalendarEvents(requests) {
                 }
                 
             } catch (error) {
-                console.error('❌ Error parsing request data:', error);
-                console.log('📄 Raw data that caused error:', request.responseData);
+                // Skip invalid data
             }
         } else {
             console.log('⚠️ No responseData found in request:', request);
         }
     });
-    
-    console.log('🎉 Total events found:', allEvents.length);
-    console.log('📋 All events:', allEvents);
     
     return allEvents;
 }
@@ -296,11 +274,8 @@ function transformHKMUEvents(hkmuEvents) {
     let totalRecurringEventsGenerated = 0;
     let eventsWithMultipleDays = 0;
     
-    console.log('🚀 Starting transformation of', hkmuEvents.length, 'original HKMU events');
-    
     hkmuEvents.forEach((event, index) => {
         originalEventsProcessed++;
-        console.log(`\n🔄 [${index + 1}/${hkmuEvents.length}] Transforming HKMU event:`, event.eventTitle || 'Untitled');
         
         // Check if this is HKMU format (has eventTitle and date components)
         if (event.eventTitle && event.startDate_yr) {
@@ -313,13 +288,10 @@ function transformHKMUEvents(hkmuEvents) {
                 eventsWithMultipleDays++;
             }
             
-            console.log('📅 Event occurs on', activeDays.length, 'days:', activeDays);
-            
             // Create events for each active day
             let eventsForThisOriginal = 0;
             activeDays.forEach(dayName => {
                 const dayIndex = daysOfWeek.indexOf(dayName);
-                console.log(`  📍 Processing day: ${dayName} (index: ${dayIndex})`);
                 
                 // Calculate the actual date for this day of week
                 const startDate = new Date(
@@ -334,7 +306,7 @@ function transformHKMUEvents(hkmuEvents) {
                     parseInt(event.endDate_day)
                 );
                 
-                console.log(`  📅 Date range: ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+
                 
                 // Find the first occurrence of this day of week in the date range
                 // JavaScript: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
@@ -382,19 +354,12 @@ function transformHKMUEvents(hkmuEvents) {
                     weeklyEventsForThisDay++;
                     totalRecurringEventsGenerated++;
                     
-                    console.log(`    ✅ Created event #${weeklyEventsForThisDay} for ${dayName}:`, eventStartTime.toLocaleDateString(), 'at', eventStartTime.toLocaleTimeString());
-                    
                     // Move to next week
                     currentDate.setDate(currentDate.getDate() + 7);
                 }
-                
-                console.log(`  📊 Generated ${weeklyEventsForThisDay} weekly events for ${dayName}`);
              });
-             
-             console.log(`🔢 Original event "${event.eventTitle}" generated ${eventsForThisOriginal} total events`);
          } else {
              // Handle other event formats or create a basic event
-             console.log('⚠️ Unknown event format, creating basic event');
              const basicEvent = {
                  subject: event.title || event.eventTitle || event.name || 'Untitled Event',
                  startDate: new Date().toLocaleDateString('en-US'),
@@ -410,16 +375,6 @@ function transformHKMUEvents(hkmuEvents) {
              totalRecurringEventsGenerated++;
          }
      });
-     
-     // Final transformation summary
-     console.log('\n📈 TRANSFORMATION SUMMARY:');
-     console.log('📥 Original events processed:', originalEventsProcessed);
-     console.log('📅 Events with multiple active days:', eventsWithMultipleDays);
-     console.log('🔢 Total active days found:', totalActiveDaysFound);
-     console.log('🔄 Total recurring events generated:', totalRecurringEventsGenerated);
-     console.log('📤 Final transformed events:', transformedEvents.length);
-     console.log('📊 Transformation ratio:', (transformedEvents.length / hkmuEvents.length).toFixed(2) + ':1');
-     console.log('🎯 Transformed', hkmuEvents.length, 'HKMU events into', transformedEvents.length, 'Google Calendar events');
      
      return transformedEvents;
 }

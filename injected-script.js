@@ -22,22 +22,17 @@
             this._interceptUrl = url;
             this._interceptMethod = method;
             
-
-            
             return originalXHROpen.apply(this, arguments);
         };
         
         XMLHttpRequest.prototype.send = function(body) {
-
             
             if (isTargetUrl(this._interceptUrl)) {
-                console.log('🎯 HKMU Interceptor: Detected XHR request to', this._interceptUrl);
                 
                 const originalOnReadyStateChange = this.onreadystatechange;
                 
                 this.onreadystatechange = function() {
                     if (this.readyState === 4) {
-                        console.log('HKMU Calendar Data Intercepted:', this.responseText);
                         
                         // Store intercepted data via message passing
                         const requestData = {
@@ -74,14 +69,10 @@
             const url = typeof input === 'string' ? input : input.url;
             const method = init.method || 'GET';
             
-
-            
             if (isTargetUrl(url)) {
-
                 
                 return originalFetch.apply(this, arguments)
                     .then(response => {
-
                         
                         // Clone response to read body without consuming it
                         const responseClone = response.clone();
@@ -89,7 +80,6 @@
                         // Try to read and log response data
                         responseClone.text()
                             .then(textData => {
-                                console.log('HKMU Calendar Data Intercepted:', textData);
                                 
                                 // Store intercepted data via message passing
                                 const requestData = {
@@ -109,13 +99,12 @@
                                 }, '*');
                             })
                             .catch(error => {
-
+                                // Ignore read errors
                             });
                         
                         return response;
                     })
                     .catch(error => {
-
                         throw error;
                     });
             }
@@ -139,33 +128,30 @@
             if (originalButton && !document.getElementById('btnCustomAction')) {
 
                 
-                // Create the duplicate button as an anchor tag
-                const duplicateButton = document.createElement('a');
-                duplicateButton.href = '#';
-                duplicateButton.id = 'btnCustomAction';
-                duplicateButton.className = originalButton.className; // Copy all classes
-                duplicateButton.style.cssText = originalButton.style.cssText; // Copy all inline styles
+                // Create duplicate button
+                const duplicateBtn = document.createElement('button');
+                duplicateBtn.textContent = '📋 Duplicate Calendar';
+                duplicateBtn.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 10000;
+                    background: #4CAF50;
+                    color: white;
+                    border: none;
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                `;
                 
-                // Create the icon span
-                const iconSpan = document.createElement('span');
-                iconSpan.className = 'ui-icon ui-icon-gear';
+                duplicateBtn.addEventListener('click', function() {
+                    // This could trigger additional calendar data requests
+                    window.location.reload();
+                });
                 
-                // Add the icon and text
-                duplicateButton.appendChild(iconSpan);
-                duplicateButton.appendChild(document.createTextNode('Custom Action'));
-                
-                // Add empty click handler (to be filled later)
-                duplicateButton.onclick = function(e) {
-                    e.preventDefault();
-                    // Custom Action button clicked - function to be implemented
-                    // Empty function - user will fill this later
-                };
-                
-                // Add proper spacing to match the gap between other buttons
-                duplicateButton.style.marginLeft = '5px';
-                
-                // Insert the button next to the original
-                originalButton.parentNode.insertBefore(duplicateButton, originalButton.nextSibling);
+                document.body.appendChild(duplicateBtn);
                 
 
                 clearInterval(checkForButton);
@@ -184,5 +170,7 @@
     } else {
         createDuplicateButton();
     }
-    
+    } catch (error) {
+        // Ignore setup errors
+    }
 })();

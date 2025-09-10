@@ -1,5 +1,4 @@
 // Content script for HKMU Calendar Interceptor
-console.log('🔧 HKMU Calendar Interceptor: Content script loaded at', new Date().toISOString());
 
 // Function to inject the interceptor script
 function injectScript() {
@@ -8,7 +7,6 @@ function injectScript() {
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL('injected-script.js');
     script.onload = function() {
-        console.log('✅ HKMU Calendar Interceptor: Script injected successfully');
         this.remove();
     };
     script.onerror = function() {
@@ -63,7 +61,6 @@ window.addEventListener('message', function(event) {
     
     // Check if this is our intercepted data message
     if (event.data && event.data.type === 'HKMU_INTERCEPTED_DATA' && event.data.source === 'hkmu-interceptor') {
-        console.log('📨 Content script received intercepted data:', event.data.data);
         
         const requestData = event.data.data;
         
@@ -75,15 +72,12 @@ window.addEventListener('message', function(event) {
             chrome.storage.local.set({
                 interceptedRequests: existingData
             }, () => {
-                console.log('💾 Data saved to Chrome storage via content script');
-                
                 // Send message to popup if it's open
                 chrome.runtime.sendMessage({
                     type: 'DATA_INTERCEPTED',
                     data: requestData
                 }).catch(() => {
                     // Popup might not be open, ignore error
-                    console.log('📭 Popup not available for message');
                 });
             });
         });
