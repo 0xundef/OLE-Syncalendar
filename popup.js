@@ -1,122 +1,98 @@
 // Popup script for HKMU Calendar Interceptor
 
 // DOM elements
-const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-const toggleBtn = document.getElementById('toggleBtn');
 const clearBtn = document.getElementById('clearBtn');
 const exportBtn = document.getElementById('exportBtn');
-const totalRequests = document.getElementById('totalRequests');
-const todayRequests = document.getElementById('todayRequests');
 const requestsList = document.getElementById('requestsList');
 const emptyState = document.getElementById('emptyState');
 
-// Simple state tracking
-let isEnabled = true;
+
+
+// Load and display request data
+async function loadRequestData() {
+  try {
+    const result = await new Promise((resolve) => {
+      chrome.storage.local.get(['interceptedRequests'], resolve);
+    });
+    
+    const requests = result.interceptedRequests || [];
+    displayRequestData(requests);
+  } catch (error) {
+    console.error('HKMU Syncalendar: Failed to load request data', error);
+  }
+}
+
+// Display request data (show only the newest request)
+function displayRequestData(requests) {
+  if (!requests || requests.length === 0) {
+    requestsList.innerHTML = '<div class="empty-state">No requests intercepted yet</div>';
+    return;
+  }
+  
+  // Get the newest request (last in array)
+  const newestRequest = requests[requests.length - 1];
+  
+  // Determine status based on response status
+  let statusText = 'SUCCESS';
+  let statusClass = 'method-GET';
+  
+  if (newestRequest.status) {
+    if (newestRequest.status >= 200 && newestRequest.status < 300) {
+      statusText = 'SUCCESS';
+      statusClass = 'method-GET';
+    } else {
+      statusText = 'ERROR';
+      statusClass = 'method-DELETE';
+    }
+  }
+  
+  // Format the URL
+  // Format the time
+  const time = newestRequest.timestamp ? 
+    new Date(newestRequest.timestamp).toLocaleTimeString() : 
+    new Date().toLocaleTimeString();
+  
+  // Determine display message based on status
+  const displayMessage = statusText === 'SUCCESS' ? 
+    'fetch the newest calendar events' : 
+    'failed to fetch calendar events';
+  
+  // Create the request item HTML
+  const requestItemHTML = `
+    <div class="request-item">
+      <span class="request-method ${statusClass}">${statusText}</span>
+      <span class="request-url">${displayMessage}</span>
+      <span class="request-time">${time}</span>
+    </div>
+  `;
+  
+  requestsList.innerHTML = requestItemHTML;
+}
 
 // Initialize popup
 async function initialize() {
   try {
-    // Load and display data
-    await loadRequestData();
-    
     // Set up event listeners
     setupEventListeners();
-    
-    // Update UI
-    updateUI();
-    
-
+    // Load initial data
+    await loadRequestData();
   } catch (error) {
     console.error('HKMU Syncalendar: Failed to initialize popup', error);
   }
 }
 
-// Load request data from storage
-async function loadRequestData() {
-  return new Promise((resolve) => {
-    chrome.storage.local.get(['interceptedRequests'], (result) => {
-      const requests = result.interceptedRequests || [];
-      displayRequestData(requests);
-      updateStats(requests);
-      resolve();
-    });
-  });
-}
 
-// Display request data in the UI
-function displayRequestData(requests) {
-  if (requests.length === 0) {
-    requestsList.innerHTML = '<div class="empty-state">No requests intercepted yet.</div>';
-    return;
-  }
-  
-  // Show only the last 10 requests in popup
-  const recentRequests = requests.slice(-10).reverse();
-  
-  const requestsHTML = recentRequests.map(request => {
-    const method = request.method || 'UNKNOWN';
-    const url = request.url || 'Unknown URL';
-    const time = new Date(request.timestamp).toLocaleTimeString();
-    const status = request.responseStatus ? ` (${request.responseStatus})` : '';
-    
-    return `
-      <div class="request-item" title="${url}">
-        <span class="request-method method-${method}">${method}</span>
-        <div class="request-url">${truncateUrl(url)}${status}</div>
-        <div class="request-time">${time}</div>
-      </div>
-    `;
-  }).join('');
-  
-  requestsList.innerHTML = requestsHTML;
-}
 
-// Update statistics
-function updateStats(requests) {
-  const total = requests.length;
-  const today = requests.filter(request => {
-    const requestDate = new Date(request.timestamp).toDateString();
-    const todayDate = new Date().toDateString();
-    return requestDate === todayDate;
-  }).length;
-  
-  totalRequests.textContent = total;
-  todayRequests.textContent = today;
-}
 
-// Truncate URL for display
-function truncateUrl(url, maxLength = 40) {
-  if (url.length <= maxLength) return url;
-  return url.substring(0, maxLength - 3) + '...';
-}
 
-// Update UI based on current state
-function updateUI() {
-  // Update status
-  if (isEnabled) {
-    statusDot.classList.remove('inactive');
-    statusText.textContent = 'Active';
-    toggleBtn.textContent = 'Disable';
-    toggleBtn.classList.add('danger');
-    toggleBtn.classList.remove('primary');
-  } else {
-    statusDot.classList.add('inactive');
-    statusText.textContent = 'Inactive';
-    toggleBtn.textContent = 'Enable';
-    toggleBtn.classList.add('primary');
-    toggleBtn.classList.remove('danger');
-  }
-}
+
+
+
+
+
 
 // Set up event listeners
 function setupEventListeners() {
-  // Toggle interceptor
-  toggleBtn.addEventListener('click', async () => {
-    isEnabled = !isEnabled;
-    updateUI();
-  });
-  
   // Clear data
   clearBtn.addEventListener('click', async () => {
     if (confirm('Are you sure you want to clear all intercepted data?')) {
@@ -130,9 +106,7 @@ function setupEventListeners() {
     await exportData();
   });
   
-
-  
-  // Auto-refresh data every 2 seconds
+  // Auto-refresh every 2 seconds to show latest request status
   setInterval(async () => {
     await loadRequestData();
   }, 2000);
