@@ -18,7 +18,8 @@
     {
       "matches": ["*://iole.hkmu.edu.hk/*", "*://schedule.hkmu.edu.hk/*"],
       "js": ["content.js"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
