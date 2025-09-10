@@ -25,7 +25,7 @@ async function loadRequestData() {
 // Display request data (show only the newest request)
 function displayRequestData(requests) {
   if (!requests || requests.length === 0) {
-    requestsList.innerHTML = '<div class="empty-state">No data to export.(go to OLE and load the canlendar)</div>';
+    requestsList.innerHTML = '<div class="empty-state">No data to export.(go to OLE and load the calendar)</div>';
     return;
   }
   

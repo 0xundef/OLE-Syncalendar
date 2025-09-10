@@ -10,7 +10,13 @@ A Chrome extension that intercepts and imports calendar events from the HKMU OLE
 
 ## Locally Import
 
-Go to the OLE platform and navigate to the calendar webpage. The extension will automatically intercept the calendar events.
+![import calendar events](doc_popup1.png)
+
+Go to the OLE platform load calendar directly or navigate to the calendar webpage. The extension will automatically intercept the calendar events.
+
+![import calendar events](doc_load_calendar.png)
+
+Then extension has intercepted the calendar events.
 
 ![import calendar events](doc_popup.png)
 
@@ -18,4 +24,4 @@ Once you export the events data, the extension will automatically convert the OL
 
 ![import calendar events](doc_export.png)
 
-the next step is to import the events to the google calendar
+The next step is to import the events to the google calendar
