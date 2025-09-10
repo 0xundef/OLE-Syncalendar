@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "HKMU Syncalendar",
-  "description": "Chrome extension to intercept and record XHR requests",
+  "description": "Sync HKMU calendar events to Google Calendar on OLE",
   "version": "1.0",
   "icons": {
     "16": "icon16.png",
@@ -13,10 +13,10 @@
     "default_title": "HKMU Syncalendar"
   },
   "permissions": ["storage", "activeTab", "scripting", "downloads"],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": ["*://iole.hkmu.edu.hk/*", "*://schedule.hkmu.edu.hk/*"],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["*://iole.hkmu.edu.hk/*", "*://schedule.hkmu.edu.hk/*"],
       "js": ["content.js"],
       "run_at": "document_start"
     }
@@ -24,7 +24,7 @@
   "web_accessible_resources": [
     {
       "resources": ["injected-script.js"],
-      "matches": ["<all_urls>"]
+      "matches": ["*://iole.hkmu.edu.hk/*", "*://schedule.hkmu.edu.hk/*"]
     }
   ]
 }
