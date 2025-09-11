@@ -1,6 +1,6 @@
 # OLE Syncalendar - Chrome Extension
 
-A Chrome extension that intercepts and imports calendar events from the HKMU OLE(Oline learning Environment) calendar to others like Google calendar or Outlook canlendar, etc.
+A Chrome extension that intercepts and imports calendar events from the HKMU OLE (Online Learning Environment) calendar to others like Google calendar or Outlook calendar, etc.
 
 
 ## Features
@@ -16,7 +16,7 @@ Go to the OLE platform load calendar directly or navigate to the calendar webpag
 
 ![import calendar events](doc_load_calendar_final.png)
 
-Then extension has intercepted the calendar events.
+The extension has intercepted the calendar events.
 
 ![import calendar events](doc_popup_final.png)
 
@@ -24,4 +24,4 @@ Once you export the events data, the extension will automatically convert the OL
 
 ![import calendar events](doc_export_final.png)
 
-The next step is to import the events to the google calendar
+The next step is to import the events to Google Calendar
