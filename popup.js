@@ -149,13 +149,23 @@ async function exportData() {
       return;
     }
     
-    // Generate CSV content
-    const csvContent = generateGoogleCalendarCSV(events);
+    // Get selected export format
+    const exportFormat = document.getElementById('exportFormat') ? document.getElementById('exportFormat').value : 'csv';
+    let content, mimeType, filename;
     
-    const dataBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    if (exportFormat === 'ics') {
+      content = generateICalendarICS(events);
+      mimeType = 'text/calendar;charset=utf-8;';
+      filename = `hkmu-calendar-events-${new Date().toISOString().split('T')[0]}.ics`;
+    } else {
+      content = generateGoogleCalendarCSV(events);
+      mimeType = 'text/csv;charset=utf-8;';
+      filename = `hkmu-calendar-events-${new Date().toISOString().split('T')[0]}.csv`;
+    }
+    
+    const dataBlob = new Blob([content], { type: mimeType });
     
     const url = URL.createObjectURL(dataBlob);
-    const filename = `hkmu-calendar-events-${new Date().toISOString().split('T')[0]}.csv`;
     
     // Create download link
     const downloadLink = document.createElement('a');
@@ -169,7 +179,8 @@ async function exportData() {
     
     URL.revokeObjectURL(url);
     
-    alert(`Successfully exported ${events.length} calendar events to CSV format for Google Calendar import.`);
+    const formatName = exportFormat.toUpperCase();
+    alert(`Successfully exported ${events.length} calendar events to ${formatName} format for calendar import.`);
   } catch (error) {
     console.error('HKMU Calendar: Export failed', error);
     alert('Failed to export calendar data. Check console for details.');
@@ -408,6 +419,152 @@ function generateGoogleCalendarCSV(events) {
   });
   
   return csvContent;
+}
+
+function generateICalendarICS(events) {
+    let icsContent = 'BEGIN:VCALENDAR\r\n';
+    icsContent += 'VERSION:2.0\r\n';
+    icsContent += 'PRODID:-//HKMU Course Sync//Course Calendar//EN\r\n';
+    icsContent += 'CALSCALE:GREGORIAN\r\n';
+    
+    events.forEach(event => {
+        if (event.subject && event.startDate && event.startTime) {
+            icsContent += 'BEGIN:VEVENT\r\n';
+            
+            // Generate unique UID
+            const uid = generateUID(event);
+            icsContent += `UID:${uid}\r\n`;
+            
+            // Format dates for iCalendar
+            const startDateTime = formatDateTimeForICS(event.startDate, event.startTime);
+            const endDateTime = formatDateTimeForICS(event.endDate || event.startDate, event.endTime || addOneHour(event.startTime));
+            
+            icsContent += `DTSTART:${startDateTime}\r\n`;
+            icsContent += `DTEND:${endDateTime}\r\n`;
+            
+            // Add event details
+            icsContent += `SUMMARY:${escapeICSText(event.subject)}\r\n`;
+            
+            if (event.description) {
+                icsContent += `DESCRIPTION:${escapeICSText(event.description)}\r\n`;
+            }
+            
+            if (event.location) {
+                icsContent += `LOCATION:${escapeICSText(event.location)}\r\n`;
+            }
+            
+            // Add creation timestamp
+            const now = new Date();
+            const dtstamp = formatDateTimeForICS(
+                now.toISOString().split('T')[0].replace(/-/g, '/'),
+                now.toTimeString().split(' ')[0]
+            );
+            icsContent += `DTSTAMP:${dtstamp}\r\n`;
+            
+            icsContent += 'END:VEVENT\r\n';
+        }
+    });
+    
+    icsContent += 'END:VCALENDAR\r\n';
+    return icsContent;
+}
+
+// Generate unique UID for iCalendar events
+function generateUID(event) {
+    // Create a safe UID using timestamp and random number to avoid Unicode issues with btoa()
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 15);
+    const eventHash = (event.subject + event.startDate + event.startTime).replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
+    return `${timestamp}-${random}-${eventHash}@hkmu-course-sync`;
+}
+
+// Format date and time for iCalendar (YYYYMMDDTHHMMSS - local time)
+function formatDateTimeForICS(dateInput, timeInput) {
+    try {
+        let year, month, day, hours, minutes;
+        
+        // Handle Date object for date
+        if (dateInput instanceof Date) {
+            year = dateInput.getFullYear();
+            month = (dateInput.getMonth() + 1).toString().padStart(2, '0');
+            day = dateInput.getDate().toString().padStart(2, '0');
+        } else {
+            // Handle string date (MM/DD/YYYY or YYYY/MM/DD format)
+            let dateParts;
+            if (dateInput.includes('/')) {
+                dateParts = dateInput.split('/');
+                // Handle MM/DD/YYYY format
+                if (dateParts[0].length <= 2) {
+                    year = dateParts[2];
+                    month = dateParts[0].padStart(2, '0');
+                    day = dateParts[1].padStart(2, '0');
+                } else {
+                    // Handle YYYY/MM/DD format
+                    year = dateParts[0];
+                    month = dateParts[1].padStart(2, '0');
+                    day = dateParts[2].padStart(2, '0');
+                }
+            } else {
+                // Handle YYYY-MM-DD format
+                dateParts = dateInput.replace(/-/g, '/').split('/');
+                year = dateParts[0];
+                month = dateParts[1].padStart(2, '0');
+                day = dateParts[2].padStart(2, '0');
+            }
+        }
+        
+        // Handle Date object for time
+        if (timeInput instanceof Date) {
+            hours = timeInput.getHours().toString().padStart(2, '0');
+            minutes = timeInput.getMinutes().toString().padStart(2, '0');
+        } else {
+            // Handle string time - both 12-hour and 24-hour formats
+            if (timeInput.includes('AM') || timeInput.includes('PM')) {
+                // Handle 12-hour format (e.g., "9:00 AM")
+                const timeOnly = timeInput.replace(/\s*(AM|PM)/i, '');
+                const timeParts = timeOnly.split(':');
+                let hour24 = parseInt(timeParts[0]);
+                
+                if (timeInput.toUpperCase().includes('PM') && hour24 !== 12) {
+                    hour24 += 12;
+                } else if (timeInput.toUpperCase().includes('AM') && hour24 === 12) {
+                    hour24 = 0;
+                }
+                
+                hours = hour24.toString().padStart(2, '0');
+                minutes = timeParts[1].padStart(2, '0');
+            } else {
+                // Handle 24-hour format (e.g., "09:00")
+                const timeParts = timeInput.split(':');
+                hours = timeParts[0].padStart(2, '0');
+                minutes = timeParts[1].padStart(2, '0');
+            }
+        }
+        
+        // Format as YYYYMMDDTHHMMSS (local time, no Z suffix)
+        return `${year}${month}${day}T${hours}${minutes}00`;
+    } catch (error) {
+        console.error('Error formatting date/time for ICS:', error);
+        // Fallback to current time in local format
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        return `${year}${month}${day}T${hours}${minutes}00`;
+    }
+}
+
+// Escape text for iCalendar format
+function escapeICSText(text) {
+    if (!text) return '';
+    return text
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '');
 }
 
 // Format date for Google Calendar (MM/DD/YYYY)

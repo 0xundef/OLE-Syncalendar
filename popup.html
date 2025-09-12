@@ -48,6 +48,21 @@
       gap: 8px;
       margin-bottom: 8px;
     }
+    
+    .export-container {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+    
+    #exportFormat {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      font-size: 14px;
+      min-width: 120px;
+    }
     .btn {
       padding: 8px 12px;
       border: 1px solid #d1d5db;
@@ -145,7 +160,13 @@
 
   <div class="controls">
     <button class="btn" id="clearBtn">Clear Data</button>
-    <button class="btn" id="exportBtn">Export</button>
+    <div class="export-container">
+      <select id="exportFormat">
+        <option value="csv">Export as CSV</option>
+        <option value="ics" selected>Export as ICS</option>
+      </select>
+      <button class="btn" id="exportBtn">Export</button>
+    </div>
   </div>
 
 
