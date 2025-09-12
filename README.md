@@ -5,7 +5,7 @@ A Chrome extension that intercepts and imports calendar events from the HKMU OLE
 
 ## Features
 
-- [x] Locally imports calendar events from HKMU calendar to Google Calendar
+- [x] Locally imports calendar events from HKMU calendar to Google/Outlook Calendar(ICS or CSV)
 - [ ] Automatically syncs calendar events with the Google Calendar API
 
 ## Locally Import

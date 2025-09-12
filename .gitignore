@@ -78,3 +78,7 @@ temp/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Calendar export files with sensitive information
+*.ics
+*.csv
