@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "HKMU Syncalendar",
-  "description": "Sync HKMU calendar events to Google Calendar on OLE",
+  "name": "OLE Syncalendar",
+  "description": "Sync OLE calendar events to Google/Outlook Calendar for HKMU users",
   "version": "1.0",
   "icons": {
     "16": "icon16.png",
