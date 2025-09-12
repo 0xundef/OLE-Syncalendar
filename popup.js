@@ -95,7 +95,7 @@ async function initialize() {
 function setupEventListeners() {
   // Clear data
   clearBtn.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to clear all intercepted data?')) {
+    if (confirm('Are you sure you want to clear all calendar data?')) {
       await clearAllData();
       await loadRequestData();
     }

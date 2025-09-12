@@ -4,6 +4,7 @@
 *.pem
 dist/
 build/
+screenshots/
 
 # Dependencies
 node_modules/
