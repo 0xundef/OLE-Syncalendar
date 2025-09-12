@@ -87,7 +87,8 @@ window.addEventListener('message', function(event) {
             chrome.storage.local.set({
                 interceptedRequests: latestRequests
             }, () => {
-                // Show notification if data has changed
+                // Data has changed, but notification is removed as it's not needed
+                // We still prepare the message for logging purposes
                 if (hasChanges && changeDetails) {
                     const { added, removed } = changeDetails;
                     let message = 'Calendar data updated: ';
@@ -100,12 +101,8 @@ window.addEventListener('message', function(event) {
                         message += `${removed.length} event(s) removed`;
                     }
                     
-                    chrome.notifications.create({
-                        type: 'basic',
-                        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0iIzQyODVGNCIvPgo8cGF0aCBkPSJNMjQgMTJDMTcuMzczIDEyIDEyIDE3LjM3MyAxMiAyNEMxMiAzMC42MjcgMTcuMzczIDM2IDI0IDM2QzMwLjYyNyAzNiAzNiAzMC42MjcgMzYgMjRDMzYgMTcuMzczIDMwLjYyNyAxMiAyNCAxMloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yMiAyMEgyNlYyNEgyMlYyMFoiIGZpbGw9IiM0Mjg1RjQiLz4KPHA+YXRoIGQ9Ik0yMiAyNkgyNlYzMEgyMlYyNloiIGZpbGw9IiM0Mjg1RjQiLz4KPC9zdmc+',
-                        title: 'HKMU Calendar Updated',
-                        message: message
-                    });
+                    // Log the update instead of showing a notification
+                    console.log('Calendar update:', message);
                 }
                 
                 // Send message to popup if it's open
