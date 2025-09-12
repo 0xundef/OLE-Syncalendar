@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>OLE Syncalendar</title>
-  <link rel="stylesheet" href="hello.css">
+  <link rel="stylesheet" href="button.css">
   <style>
     body {
       width: 400px;
@@ -161,11 +161,12 @@
   <div class="controls">
     <button class="btn" id="clearBtn">Clear Data</button>
     <div class="export-container">
-      <select id="exportFormat">
-        <option value="csv">Export as CSV</option>
-        <option value="ics" selected>Export as ICS</option>
-      </select>
       <button class="btn" id="exportBtn">Export</button>
+      <span>as</span>
+      <select id="exportFormat">
+        <option value="ics" selected>.ICS</option>
+        <option value="csv">.CSV</option>
+      </select>
     </div>
   </div>
 
