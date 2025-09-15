@@ -5,6 +5,7 @@
 dist/
 build/
 screenshots/
+extension_unpacked/
 
 # Dependencies
 node_modules/
