@@ -12,7 +12,7 @@
     "default_popup": "popup.html",
     "default_title": "OLE Syncalendar"
   },
-  "permissions": ["storage", "activeTab", "scripting", "downloads"],
+  "permissions": ["storage"],
   "host_permissions": ["*://iole.hkmu.edu.hk/*", "*://schedule.hkmu.edu.hk/*"],
   "content_scripts": [
     {
